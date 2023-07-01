@@ -18,14 +18,37 @@ fn read_input() -> Vec<Vec<u32>> {
     trees
 }
 
+fn count_perimeter(num_rows: usize, num_cols: usize) -> u32 {
+    ((num_rows * 2) + (num_cols * 2) - 4) as u32
+}
+
 fn main() {
     println!("Hello, world!");
 
-    let input = read_input();
+    let trees = read_input();
+
+    println!(
+        "how many rows {:?}, how many columns {:?}",
+        trees.len(),
+        trees[0].len()
+    );
+
+    println!(
+        "perimeter is {:?}",
+        count_perimeter(trees.len(), trees[0].len())
+    );
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn part_one() {}
+
+    #[test]
+    fn test_count_perimeter() {
+        assert_eq!(count_perimeter(3, 3), 8_u32);
+        assert_eq!(count_perimeter(5, 5), 16_u32);
+    }
 }
