@@ -43,6 +43,10 @@ impl Tree {
             || self.height > self.max_up
             || self.height > self.max_down
     }
+
+    pub fn scenic_score(&self) -> u32 {
+        0
+    }
 }
 
 // takes in grid of trees and returns a grid of trees
@@ -92,8 +96,6 @@ fn process_trees(trees: &[&[u32]]) -> Vec<Tree> {
                 is_perimeter: false,
             };
 
-            println!("processed tree: {:?}", processed_tree);
-
             processed_trees.push(processed_tree);
         }
     }
@@ -111,6 +113,66 @@ fn count_visible_trees(trees: Vec<Tree>) -> u32 {
     }
 
     visible_trees
+}
+
+// takes in grid of trees and returns a grid of trees
+fn process_trees_scenic(trees: &[&[u32]]) -> u32 {
+    let mut max_scenic_score = u32::MIN;
+
+    for (row_index, row) in trees.iter().enumerate() {
+        for (col_index, tree_height) in row.iter().enumerate() {
+            // count number of trees to the right until we hit the
+            // end or a tree that is taller than the current tree
+            let mut right = 0;
+            for (index, tree) in row[(col_index + 1)..].iter().enumerate() {
+                right += 1;
+
+                if tree >= tree_height {
+                    break;
+                }
+            }
+
+            // count number of trees to the left
+            let mut left = 0;
+            for (index, tree) in row[..col_index].iter().rev().enumerate() {
+                left += 1;
+
+                if tree >= tree_height {
+                    break;
+                }
+            }
+
+            let mut up = 0;
+            for (index, row) in trees[..row_index].iter().rev().enumerate() {
+                up += 1;
+
+                if row[col_index] >= *tree_height {
+                    break;
+                }
+            }
+
+            let mut down = 0;
+            for (index, row) in trees[(row_index + 1)..].iter().enumerate() {
+                down += 1;
+
+                if row[col_index] >= *tree_height {
+                    break;
+                }
+            }
+
+            let scenic_score = right * left * up * down;
+            if scenic_score as u32 > max_scenic_score {
+                max_scenic_score = scenic_score as u32;
+            }
+
+            println!(
+                "current_tree: {:?}, right: {:?}, left: {:?}, up: {:?}, down: {:?}, scenic_score: {:?}",
+                tree_height, right, left, up, down, scenic_score
+            );
+        }
+    }
+
+    max_scenic_score
 }
 
 fn main() {
@@ -135,6 +197,9 @@ fn main() {
     let visible_trees = count_visible_trees(processed_trees);
 
     println!("visible trees: {:?}", visible_trees);
+
+    let max_scenic_score = process_trees_scenic(&trees);
+    println!("max scenic score: {:?}", max_scenic_score);
 }
 
 #[cfg(test)]
@@ -164,5 +229,19 @@ mod tests {
         let trees: Vec<&[u32]> = trees.iter().map(|row| row.as_slice()).collect();
         let processed_trees = process_trees(&trees);
         assert_eq!(count_visible_trees(processed_trees), 21);
+    }
+
+    #[test]
+    fn test_part_two() {
+        let trees = vec![
+            vec![3, 0, 3, 7, 3],
+            vec![2, 5, 5, 1, 2],
+            vec![6, 5, 3, 3, 2],
+            vec![3, 3, 5, 4, 9],
+            vec![3, 5, 3, 9, 0],
+        ];
+
+        let trees: Vec<&[u32]> = trees.iter().map(|row| row.as_slice()).collect();
+        assert_eq!(process_trees_scenic(&trees), 8);
     }
 }
